@@ -1,0 +1,262 @@
+---
+title: 'CIND 123 - Assignment #2'
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Use RStudio for this assignment. 
+Edit the file `assignment-2.Rmd` and insert your R code where wherever you see the string "INSERT YOUR ANSWER HERE"
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
+
+When your are done with your answers and before submitting, save the file with the following naming convention: your **Lastname_Firstname**
+
+Submit **both** the rmd and the pdf output (or word or html) files, failing to submit **both** will be subject to marks deduction.
+
+
+## Question 1 -  35%
+
+Based on a monitoring process of an Intensive Care Unit activities, the attached file (icu.csv) contains 200 observations on the following nine variables:
+-	ID:	Patient ID code
+-	Survive: 1=patient survived to discharge or 0=patient die
+-	Age: Age (in years)
+-	Age Group: 1= young (under 50), 2= middle (50-69), 3 = old (70+)
+-	Sex: 1=female or 0=male
+-	Infection: 1=infection suspected or 0=no infection
+-	SysBP: Systolic blood pressure (in mm of Hg)
+-	Pulse: Heart rate (beats per minute)
+-	Emergency: 1=emergency admission or 0=elective admission.
+Using R, answer the following questions (your answers must be documented in the R environment:
+
+Reading the data 
+
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(plyr)
+setwd("C:/Users/hrangi/Downloads")
+table1<-read_csv("icu.csv")
+```
+
+1.1	What is the mean of the Heart Pulse readings, Using a histogram plot the frequencies of the Pulse readings?
+
+```{r}
+pulsedata <- mean(table1$Pulse)
+pulsedata
+g<- ggplot(table1,aes(table1$Pulse))
+g+geom_histogram(binwidth=5,col="red",aes(fill=..count..))+labs(title="Histogram of Pulse readings") + labs(x="Pulse readings", y="Frequencies")+theme_classic()
+```
+
+1.2	What is the mean of the Systolic Blood Pressure readings  as well as the Pulse readings using the summary function?
+```{r}
+summary(table1$Pulse)[4]
+summary(table1$SysBP)[4]
+```
+
+1.3	Utilize the ggplot2 library to create a histogram that plots patients that survived versus patients that died.
+Produce two diagrams, in the first binwidth is set to .5 and in the 2nd graph it should be set to 1
+o	 Hint: use the ggplot function and set aes to the survive column and the binwidth to .5 as well as 1.
+
+```{r}
+g<- ggplot(table1,aes(table1$Survive))
+g+geom_histogram(binwidth=0.5,col="red",fill="green",alpha = .2)+labs(title="Patients who survived vs Patients who died")+labs(x="0=Died  1=Survived")+theme_classic()
+g+geom_histogram(binwidth=1,col="red",fill="green",alpha = .2)+labs(title="Patients who survived vs Patients who died")+labs(x="0=Died  1=Survived")+theme_classic()
+```
+
+1.4	Create a boxplot for the age variable using the boxplot function and determine the median of patients age. Affirm your answer by reading the Summary of the dataset using the Summary function. What can you conclude about the ages of the patients.
+
+
+### Answer: The median of the patients age as detemined by the summary function and the boxplot is 63. We can conclude that the midpoint of the distribution of the ages is 63
+
+```{r}
+summary(table1$Age)
+boxplot(table1$Age,main= "Boxplot of Age",col = "red")
+text(y=fivenum(table1$Age),labels = fivenum(table1$Age),x=1.26)
+```
+
+1.5	Use the aggregate function to determine the mean age of males and females.
+	Hint: Age should be aggregated by Sex. You should have two means one for males and second for females
+
+
+```{r}
+aggregate(Age ~ Sex, data = table1,mean)
+```
+
+1.6	Use the aggregate function to determine the mean age of patients grouped by sex as well as survival status.
+	Hint: Age should be aggregated by Sex and Survive. You should have four means, males/survived, males/died, females/survived, and females/died.
+
+```{r}
+aggregate(Age ~ Sex + Survive, data = table1,mean)
+```
+
+1.7	Use the aggregate function to determine the mean of Systolic Blood Pressure as well as the Heart Pulses for the patients grouped by survival status
+	Hine: cbind function as a part of the aggregate function’s argument
+
+```{r}
+aggregate(cbind(SysBP,Pulse) ~ Survive, data = table1,mean)
+```
+
+## Question 2 - 35%
+
+Based on the Department of Mines and Technical Surveys and Statistics Canada, the attached file contains a migration data frame that has 90 entries and 8 columns.
+
+There is one record in the data file for each migration stream. You can average the 1966 and 1971 population figures for each of the source and destination provinces.
+
+This data frame contains the following columns:
+
+-	Source: Province of origin (source). A factor with levels: ALTA, Alberta; BC, British Columbia; MAN, Manitoba; NB, New Brunswick; NFLD, New Foundland; NS, Nova Scotia; ONT, Ontario; PEI, Prince Edward Island; QUE, Quebec; SASK, Saskatchewan.
+
+-	Destination: Province of destination (1971 residence). A factor with levels: ALTA, Alberta; BC, British Columbia; MAN, Manitoba; NB, New Brunswick; NFLD, New Foundland; NS, Nova Scotia; ONT, Ontario; PEI, Prince Edward Island; QUE, Quebec; SASK, Saskatchewan.
+
+-	Migrants: Number of migrants (from source to destination) in the period 1966–1971.
+
+-	Distance: Distance (between principal cities of provinces): NFLD, St. John; PEI, Charlottetown; NS, Halifax; NB, Fredricton; QUE, Montreal; ONT, Toronto; MAN, Winnipeg; SASK, Regina; ALTA, Edmonton; BC, Vancouver.
+-	pops66: 1966 population of source province.
+-	pops71: 1971 population of source province.
+-	popd66: 1966 population of destination province.
+-	popd71: 1971 population of destination province.
+
+Import the file to a data frame:
+
+```{r}
+setwd("C:/Users/hrangi/Downloads")
+migration<-read_csv("migration.csv")
+head(migration)
+```
+
+2.1 Extract the columns “source”, “destination”, and “migrants” into a new data frame of the name “mig”.
+
+```{r}
+mig<-select(migration,source,destination,migrants)
+head(mig)
+```
+
+2.2 Use the rename command of the plyr package to rename columns names to “From”, “To”, and “Migrants”.
+- hint: make sure to store the output of the rename command into a new frame.
+
+## Used dplyr function instead of plyr because it is the newer version. Also was not sure about the names of the new columns as it is not clear from the manual, so created them by my own.
+
+```{r}
+ mig<-dplyr::rename(mig,From=source, To=destination, Migrants=migrants)
+head(mig)
+```
+
+2.3 Use the aggregate function to determine the sum of migrants grouped by “From”.
+
+```{r}
+x1<-aggregate(Migrants ~ From,data=mig,sum)
+```
+
+2.4 Use the aggregate function to determine the sum of migrants grouped by “To”.
+- hint: use x1<-aggregate (Migrants ~From, x, sum)
+- hint: use x2<-aggregate (Migrants ~To, x, sum)
+
+```{r}
+x2<-aggregate(Migrants ~ To,data=mig,sum)
+```
+
+2.5 Create a new data frame that contains the results of increase or decrease of the number of migrants for every province.
+	- Hint: Subtract the “To” column – “From” column and add a new column to reflect the change in a new data frame.
+
+```{r}
+new<-cbind(x2,x1)
+new1<-mutate(new,Difference=x2$Migrants-x1$Migrants,Width)
+new1
+```
+
+2.6 Plot the change in a diagram, based on the diagram:
+- Which province has the highest increase in population?
+- Which province has the highest decrease in population?
+
+## Highest increase = BC , Highest decrease = Quebec
+```{r}
+g<-ggplot(data=new1,aes(From,Difference))
+g+geom_col(col="red",aes(fill=From))+labs(title="Graph showing Migration in different provinces of Canada")+labs(x="Provinces of Canada",y="Increase or decrease in the population of migrants")+coord_cartesian(ylim=NULL)+ theme_classic()
+```
+
+## Question 3 - 30%
+
+3.1 Using the sample function generate a sample of 30 numbers between 100 to 300 with replacement and store it into a vector.
+
+```{r}
+sample1<-sample(100:300,30,replace = TRUE)
+sample1
+```
+
+3.1.1 Using a built-in function in R, calculate the mean of the sample.
+
+```{r}
+mean(sample1)
+```
+
+3.1.2 Using a built-in function in R, calculate the median of the sample.
+
+```{r}
+median(sample1)
+```
+
+3.1.3 Determine the 1st quartile, 50th percentile, the 3rd quartile, and the Interquartile Range.
+
+```{r}
+s<-summary(sample1)
+s[7]<-IQR(sample1)
+names(s)[7]<-"IQR"
+s
+```
+
+3.2 Create a function that calculates the mode of the set.
+         hint: 
+   	- Define a function called: CalMode 
+    CalMode <- function (z) 
+
+		{ m1 <- unique (z)
+      m1[which.max (tabulate (match (z, m1)))]
+    }
+
+-	Call the function on the vector and store the result in a variable.
+-	Print the variable.
+
+
+```{r}
+CalMode <- function (z) 
+
+		{ m1 <- unique (z)
+      m1[which.max (tabulate (match (z, m1)))]
+}
+
+mode1<-CalMode(sample1)
+mode1
+```
+
+3.3 Create a Stem and Leaf Plot.
+
+```{r}
+stem(sample1,)
+```
+
+3.4 Create a histogram using the function hist (x).
+
+```{r}
+hist(sample1,col = "red",main = "Histogram of the sample",xlab = "Sample")
+```
+
+3.5 Modify the first element of the vector to show the value 1000 and create a boxplot for the new vector. Interpret the outcome of the graph.
+
+```{r}
+sample1[1]<-1000
+boxplot(sample1,col = "lightblue",outcol="red",outpch=16, main = "Boxplot of the sample")
+
+```
+
+Interpretation:
+The outlier value 1000 is represented by a red dot in the box plot
+The Median of the sample is just above 200 at 219
+The distribution of the sample is almost symetric as the graph is fairly symetric as well.
+
+
+END of Assignment #2.

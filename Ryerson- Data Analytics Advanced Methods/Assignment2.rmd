@@ -1,0 +1,74 @@
+---
+title: "Assignment2"
+author: "Harnoor Rangi"
+date: '2017-07-18'
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+#1. Create  a  visualization  to illustrate  the  distribution  of  values  for  Total  Fat,  Protein and  Carbohydrate. (12p)
+```{r}
+setwd("~/Downloads")
+library(readr)
+USDAclean<-read_csv("MyData.csv")
+
+attach(USDAclean)
+hist(TotalFat, main = "Distribution of Total Fat", col = "red")
+hist(Protein, main = "Distribution of Protein", col = "green")
+hist(Carbohydrate, main = "Distribution of Carbohydrate", col = "blue")
+
+```
+
+# 2.Create  a  visualization  to  illustrate  the  relationship between a  food's  Total  Fat  content  and  its  calorie content.  (12p)
+
+```{r}
+library(ggplot2)
+g<-ggplot(USDAclean)
+g+geom_point(aes(x=TotalFat,y=Calories),shape = 1,col="red",alpha=0.2)+labs(title="Relationship between a food's Total fat content and its calorie content")
+```
+
+# 3. Create  a  logistic  regression  model,  using  High  Calories  as  the dependent  variable, and  Carbohydrate, Protein, Total Fat and Sodiumas independent variables. (16p)
+```{r}
+logmodel1<-glm(HighCals ~ Carbohydrate+Protein+TotalFat+Sodium, data = USDAclean, family = "binomial")
+summary(logmodel1)
+```
+
+#4. Which independent variable is not significant? (10 p)
+#Answer: Sodium
+
+#5.  Which independent variable has the strongest positive predictive power in the model?(10p)
+#Answer: Carbohydrate, Protein, Total Fat
+
+#6. Create a script for a HealthCheck function to detect unhealthy foods. Foods that are high in salt, sugar and  fat  fail  the  HealthCheck,  while  all  other  foods  pass.  Foods  that  pass  the  HealthCheck  should  be assigned a 1, while foods that fail should be assigned a 0. Use the algorithm flowchart below as a basis for this script.(20p)
+```{r}
+HealthCheck <- function(y){
+  x<-as.vector(numeric(6310))
+  for(i in 1:nrow(y))
+    {
+  if(y$HighSodium[i]==1  & y$HighSugar[i]==1  & y$HighFat[i] ==1)
+   x[i] <- 0
+  else if(y$HighSodium[i] ==0 | y$HighSugar[i] ==0 | y$HighFat[i] ==0  )
+    x[i] <- 1
+  }
+  return(x)
+}
+
+
+```
+# 7. Add a new column called HealthCheck to the USDAclean data frame using the output of the function. (10p)
+```{r}
+He<-HealthCheck(USDAclean)
+USDAclean$HealthCheck <- He
+```
+
+# 8. How many foods in the USDAclean data frame fail the HealthCheck?(10p)
+```{r}
+length(which(USDAclean$HealthCheck == 0))
+```

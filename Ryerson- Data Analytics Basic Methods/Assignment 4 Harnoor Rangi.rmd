@@ -1,0 +1,64 @@
+---
+title: 'CIND 123 - Assignment #4'
+output:
+  word_document: default
+  pdf_document: default
+---
+
+This assignment makes use of pakcage "RCurl", accordingly carry out the following:
+```{r load_packages}
+#install.packages("RCurl")
+library(RCurl) 
+```
+First we read the computers.csv file and load the price using the following: 
+```{r}
+u <- getURL("http://vincentarelbundock.github.io/Rdatasets/csv/Ecdat/Computers.csv")
+cprices <- read.csv(text =u)
+```
+1) Display the first 6 rows of cprices and make note of all the variables.
+```{r}
+attach(cprices)
+head(cprices,6)
+
+```
+2) Calculate the mean, variance and standard deviation of price by omitting the missing values, if any.
+```{r}
+mean(cprices$price, na.rm = TRUE)
+sd(cprices$price, na.rm = TRUE)
+var(cprices$price, na.rm = TRUE)
+
+```
+3) Use `ram` to predict price and build a univariate linear regression model, display a summary of your model indicating Residuals, Coefficients..etc.
+```{r}
+model1<-lm(price~ram,data = cprices)
+summary(model1)
+
+```
+4) Based on the output of your model, predicted the expected price when ram is set to 8 MB
+```{r}
+attach(cprices)
+newdata=data.frame(ram = 8)
+predict(model1,newdata,interval="prediction")
+
+```
+5) Find Pearson correlation between hard disk and speed.
+```{r}
+cor(hd,speed,method = "pearson")
+```
+6) Write the correlation matrix of the variables: price, speed, hd and ram.
+```{r}
+cprices1<-cprices[,2:5]
+cor(cprices1)
+library(corrplot)
+corrplot(cor(cprices1), method = "number")
+```
+7) Visualize the correlation of the numeric columns in the computer prices dataset.
+```{r}
+cprices<-cprices[,c(1,2,3,4,5,6,10,11)]
+corrplot(cor(cprices),method = "circle")
+
+```
+END of Assignment #4.
+
+
+

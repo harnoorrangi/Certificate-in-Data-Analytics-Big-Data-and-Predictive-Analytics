@@ -1,0 +1,142 @@
+---
+title: "Assignment 1"
+author: "Harnoor Rangi"
+date: '2017-07-09'
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+CMTH 642: Advanced Methods
+Assignment 1
+
+
+1. Read the csv files in the folder. (4 point)
+```{r }
+setwd("~/Downloads")
+library(readr)
+dat1<-read_csv("USDA_Micronutrients.csv")
+dat2<-read_csv("USDA_Macronutrients.csv")
+```
+
+2. Merge the data frames using the variable "ID". Name the Merged Data Frame "USDA". (6 points)
+```{r}
+USDA <- merge(dat2,dat1,by="ID")
+```
+
+3. Prepare the dataset for analysis. (6 points)
+```{r}
+summary(USDA)
+sapply(USDA,class)
+str(USDA)
+USDA$Sodium = gsub(",","",USDA$Sodium, fixed = TRUE)
+USDA$Sodium = as.numeric(USDA$Sodium)
+USDA$Potassium = gsub(",","",USDA$Potassium, fixed = TRUE)
+USDA$Potassium = as.numeric(USDA$Potassium)
+```
+# Removing duplicate values
+```{r}
+desp1 <- as.data.frame(table(USDA$Description))
+duplicates <- subset(desp1,desp1$Freq >1)
+USDA_clean<- aggregate(USDA[,-2],list(USDA$Description), mean, na.rm = TRUE)
+colnames(USDA_clean)[1] <- "Description"
+summary(USDA_clean)
+nrow(USDA)
+nrow(USDA_clean)
+```
+#4. Remove records with missing values in 4 or more vectors
+```{r}
+USDAclean <- USDA[rowSums(is.na(USDA)) < 4, ]
+```
+#5. How many records remain in the data frame?
+```{r}
+dim(USDA)
+
+dim(USDAclean)
+```
+#6. For records with missing values for Sugar, Vitamin E and Vitamin D, replace missing values with mean value for the respective vector.
+```{r}
+USDAclean$Sugar[is.na(USDAclean$Sugar)] <- mean(USDAclean$Sugar, na.rm=TRUE)
+
+USDAclean$VitaminE[is.na(USDAclean$VitaminE)] <- mean(USDAclean$VitaminE, na.rm=TRUE)
+
+USDAclean$VitaminD[is.na(USDAclean$VitaminD)] <- mean(USDAclean$VitaminD, na.rm=TRUE)
+```
+#7. With a single line of code, remove all remaining records with missing values. Name the new Data Frame "USDAclean".
+```{r}
+USDAclean1 <- na.omit(USDAclean)
+```
+#8. How many records remain in the data frame?
+```{r}
+dim(USDAclean1)
+```
+#9. Which food has the highest sodium level?
+```{r}
+USDAclean1[USDAclean1$Sodium == max(USDAclean1$Sodium), ]
+```
+#10. Create a scatter plot using Protein and Fat, with the plot title "Fat vs Protein", labeling the axes "Fat" and "Protein", and making the data points red.
+```{r}
+plot(USDAclean1$Protein, USDAclean1$TotalFat, main=" Plot of Fat vs Protein", xlab="Protein", ylab="Fat", col="red")
+```
+
+
+#11. Create a histogram of Vitamin C distribution in foods, with a limit of 0 to 100 on the x-axis and breaks of 100.
+```{r}
+hist( USDAclean1$VitaminC, 
+           main="Histogram of Vitamin C", 
+           xlab="Vitamin C", 
+           border="red", 
+           col="red",
+      xlim=c(0,100),
+           las=1, 
+           breaks=100)
+```
+
+
+#12. Add a new variable to the data frame that takes value 1 if the food has higher sodium than average, 0 otherwise. Call this variable HighSodium.
+
+```{r}
+USDAclean1["HighSodium"] <- USDAclean1$Sodium 
+USDAclean1["HighSodium"] <- ifelse(USDAclean1["HighSodium"] > 648.9257, 1, 0) 
+```
+
+
+#13. Do the same for HighCalories, HighProtein, HighSugar, and HighFat.
+
+```{r}
+USDAclean1["HighCalories"] <- USDAclean1$Calories
+USDAclean1["HighCalories"] <- ifelse(USDAclean1["HighCalories"] > 219.7, 1, 0) 
+
+USDAclean1["HighProtein"] <- USDAclean1$Protein
+USDAclean1["HighProtein"] <- ifelse(USDAclean1["HighProtein"] > 11.71, 1, 0) 
+
+USDAclean1["HighSugar"] <- USDAclean1$Sugar
+USDAclean1["HighSugar"] <- ifelse(USDAclean1["HighSugar"] > 8.257, 1, 0) 
+
+USDAclean1["HighFat"] <- USDAclean1$TotalFat
+USDAclean1["HighFat"] <- ifelse(USDAclean1["HighFat"] > 10.32, 1, 0)
+```
+
+
+#14. How many foods have both high sodium and high fat?
+
+```{r}
+highsod.fat <- USDAclean1$Description[USDAclean1$HighSodium == 1 & USDAclean1$HighFat == 1]
+length(highsod.fat)
+```
+
+
+#15. Calculate the average amount of iron by high and low protein (i.e. average amount of iron in foods with high protein and average amount of iron in foods with low protein).
+
+```{r}
+aggregate(USDAclean1$Iron~USDAclean1$HighProtein, USDAclean1,mean)
+```
+
+
+
+
+
